@@ -303,6 +303,18 @@ module Sunspot
           "#{solr_value(@value)}*"
         end
       end
+
+      # 
+      # Results must have a field with a value that begins with the argument.
+      # Most useful for strings, but in theory will work with anything.
+      #
+      class Contains < Base
+        private
+
+        def to_solr_conditional
+          "*#{solr_value(@value)}*"
+        end
+      end
     end
   end
 end
