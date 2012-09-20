@@ -24,6 +24,12 @@ module Sunspot
     #
     attr_reader :config
 
+    #
+    # rsolr::connection hash objects per core
+    #
+    attr_accessor :connections
+    @connections = {}
+
     # 
     # Sessions are initialized with a Sunspot configuration and a Solr
     # connection. Usually you will want to stick with the default arguments
@@ -32,8 +38,8 @@ module Sunspot
     def initialize(config = Configuration.build, connection = nil)
       @config = config
       yield(@config) if block_given?
-      @connection = connection
-      @deletes = @adds = 0
+      @connections = {}
+      @deletes = @adds = 0      
     end
 
     # 
@@ -41,6 +47,7 @@ module Sunspot
     #
     def new_search(*types, &block)
       types.flatten!
+      @types = types
       search = Search::StandardSearch.new(
         connection,
         setup_for_types(types),
@@ -54,7 +61,7 @@ module Sunspot
     #
     # See Sunspot.search
     #
-    def search(*types, &block)
+    def search(*types, &block)      
       search = new_search(*types, &block)
       search.execute
     end
@@ -237,9 +244,14 @@ module Sunspot
     #
     # RSolr::Connection::Base:: The connection for this session
     #
-    def connection
-      @connection ||=
-        self.class.connection_class.connect(:url          => config.solr.url,
+    def connection      
+      if @types.empty? || @types.length > 1
+        raise(ArgumentError, "You must exactly one type to search")
+      end      
+      core = @types.first.name
+      core_url = config.solr.url + '/' + core.downcase.pluralize
+
+      self.connections[core.to_sym] ||= self.class.connection_class.connect(:url => core_url,
                                             :read_timeout => config.solr.read_timeout,
                                             :open_timeout => config.solr.open_timeout)
     end
