@@ -5,11 +5,11 @@ module Sunspot
         @scope = Scope.new
         @sort = SortComposite.new
         @components = [@scope, @sort]
-        if types.length == 1
-          @scope.add_positive_restriction(TypeField.instance, Restriction::EqualTo, types.first)
-        else
-          @scope.add_positive_restriction(TypeField.instance, Restriction::AnyOf, types)
-        end
+        # if types.length == 1
+        #   @scope.add_positive_restriction(TypeField.instance, Restriction::EqualTo, types.first)
+        # else
+        #   @scope.add_positive_restriction(TypeField.instance, Restriction::AnyOf, types)
+        # end
       end
 
       def solr_parameter_adjustment=(block)
